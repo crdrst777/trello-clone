@@ -21,8 +21,10 @@ function App() {
       // 2.그 복사본을 기존 보드들 옆에 붙여준다.
       setToDos((allBoards) => {
         const boardCopy = [...allBoards[source.droppableId]];
+        const taskObj = boardCopy[source.index];
+        // 내가 옮기려는 toDo object. obj를 지워버려서 원하는 참조값을 없애면 안되니깐 지우기전애 먼저 잡아놓은거임.
         boardCopy.splice(source.index, 1);
-        boardCopy.splice(destination?.index, 0, draggableId);
+        boardCopy.splice(destination?.index, 0, taskObj);
         return {
           ...allBoards, // 기존 보드들
           [source.droppableId]: boardCopy, // 변형된 복사본
@@ -38,9 +40,10 @@ function App() {
       // 2. sourceBoard에서 draggableId을 삭제, targetBoard에는 draggableId을 추가
       setToDos((allBoards) => {
         const sourceBoard = [...allBoards[source.droppableId]];
+        const taskObj = sourceBoard[source.index];
         const destinationBoard = [...allBoards[destination.droppableId]];
         sourceBoard.splice(source.index, 1);
-        destinationBoard.splice(destination?.index, 0, draggableId);
+        destinationBoard.splice(destination?.index, 0, taskObj);
         return {
           ...allBoards,
           [source.droppableId]: sourceBoard,

@@ -3,17 +3,16 @@ import { Draggable } from "react-beautiful-dnd";
 import styled from "styled-components";
 
 interface IDraggableCardProps {
-  toDo: string;
+  toDoId: number;
+  toDoText: string;
   index: number;
 }
 
-const DraggableCard = ({ toDo, index }: IDraggableCardProps) => {
-  console.log(toDo, "has been rendered");
-
+const DraggableCard = ({ toDoId, toDoText, index }: IDraggableCardProps) => {
   return (
     <>
-      <Draggable key={toDo} draggableId={toDo} index={index}>
-        {/* 여기서 key는 draggableId와 동일하게 */}
+      <Draggable draggableId={toDoId + ""} index={index}>
+        {/* draggableId는 string이어야함 */}
         {(magic, snapshot) => (
           <Card
             isDragging={snapshot.isDragging} // 드래깅 중인지 여부
@@ -21,7 +20,7 @@ const DraggableCard = ({ toDo, index }: IDraggableCardProps) => {
             {...magic.dragHandleProps}
             {...magic.draggableProps}
           >
-            {toDo}
+            {toDoText}
           </Card>
         )}
       </Draggable>

@@ -1,19 +1,33 @@
 import { atom } from "recoil";
 
+export interface IToDo {
+  id: number;
+  text: string;
+}
+
 interface IToDoState {
-  [key: string]: string[];
+  [key: string]: IToDo[];
 }
 
 export const toDoState = atom<IToDoState>({
   key: "toDo",
   default: {
-    "To Do": ["a", "b"],
-    Doing: ["c", "d", "e"],
-    Done: ["f"],
+    "To Do": [
+      { id: 1, text: "hi" },
+      { id: 2, text: "hello" },
+    ],
+    Doing: [],
+    Done: [],
   },
 });
 
-// to_do: ["a", "b"],
-// diing: ["c", "d", "e"],
-// done: ["f"],
-// 이렇게 지정해주면 유저가 보드를 더 추가했을시 에러남. 그래서 확장성을 위해 타입을 저렇게 만들었음.
+// Done: [
+//   {
+//     id: 2;
+//     text: “f”;
+//   },
+//   {
+//     id: 3;
+//     text: “dd”;
+//   }
+//   ]

@@ -1,11 +1,14 @@
+import { useForm } from "react-hook-form";
 import { useRef } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import DraggableCard from "./DraggableCard";
+import { IToDo, toDoState } from "../atom";
+import { useSetRecoilState } from "recoil";
 
 interface IBoardProps {
-  toDos: string[];
-  boardId: string;
+  toDos: IToDo[];
+  boardId: string; // Doing이나 Done같은거임
 }
 
 interface IAreaProps {
@@ -13,21 +16,52 @@ interface IAreaProps {
   isDraggingFromThis: boolean;
 }
 
+interface IForm {
+  toDo: string;
+}
+
 const Board = ({ toDos, boardId }: IBoardProps) => {
-  const inputRef = useRef<HTMLInputElement>(null); // 타입 지정해줘야함. <HTMLInputElement>
-  const onClick = () => {
-    inputRef.current?.focus(); // 버튼을 누르면 input이 활성화됨.
-    setTimeout(() => {
-      inputRef.current?.blur(); // focus됐던게 5초 후에 풀림.
-    }, 5000);
+  const setToDos = useSetRecoilState(toDoState);
+  const { register, setValue, handleSubmit } = useForm<IForm>();
+  const onValid = ({ toDo }: IForm) => {
+    console.log(toDo);
+    const newToDo = {
+      id: Date.now(),
+      text: toDo,
+    };
+    setToDos((allBoards) => {
+      return {
+        ...allBoards,
+        [boardId]: [
+          newToDo,
+          ...allBoards[boardId], // 기존의 board 내용들 예를들면 { id: 1, text: "hi" }, { id: 2, text: "hello" },
+        ],
+      };
+    });
+    setValue("toDo", "");
   };
+
+  // const inputRef = useRef<HTMLInputElement>(null); // 타입 지정해줘야함. <HTMLInputElement>
+  // const onClick = () => {
+  //   inputRef.current?.focus(); // 버튼을 누르면 input이 활성화됨.
+  //   setTimeout(() => {
+  //     inputRef.current?.blur(); // focus됐던게 5초 후에 풀림.
+  //   }, 5000);
+  // };
 
   return (
     <>
       <Wrapper>
         <Title>{boardId}</Title>
-        <input ref={inputRef} placeholder="grab me" />
-        <button onClick={onClick}>click me</button>
+        <Form onSubmit={handleSubmit(onValid)}>
+          <input
+            {...register("toDo", { required: true })}
+            type="text"
+            placeholder={`Àdd task on ${boardId}`}
+          />
+        </Form>
+        {/* <input ref={inputRef} placeholder="grab me" />
+        <button onClick={onClick}>click me</button> */}
         <Droppable droppableId={boardId}>
           {(magic, snapshot) => (
             <Area
@@ -37,7 +71,12 @@ const Board = ({ toDos, boardId }: IBoardProps) => {
               {...magic.droppableProps}
             >
               {toDos.map((toDo, index) => (
-                <DraggableCard key={toDo} toDo={toDo} index={index} />
+                <DraggableCard
+                  key={toDo.id}
+                  index={index}
+                  toDoId={toDo.id}
+                  toDoText={toDo.text}
+                />
               ))}
               {magic.placeholder}
               {/* Draggable 엘리먼트를 드래그하는 동안 position: fixed(영역을 고정시킴)를 적용함. (Droppable 리스트가 작아지는 것을 방지) */}
@@ -66,6 +105,13 @@ const Title = styled.h2`
   font-weight: 600;
   margin-bottom: 10px;
   font-size: 18px;
+`;
+
+const Form = styled.form`
+  width: 100%;
+  input {
+    width: 100%;
+  }
 `;
 
 const Area = styled.div<IAreaProps>`
