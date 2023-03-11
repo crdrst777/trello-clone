@@ -23,6 +23,7 @@ interface IForm {
 const Board = ({ toDos, boardId }: IBoardProps) => {
   const setToDos = useSetRecoilState(toDoState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
+  // addToDo
   const onValid = ({ toDo }: IForm) => {
     console.log(toDo);
     const newToDo = {
@@ -30,13 +31,15 @@ const Board = ({ toDos, boardId }: IBoardProps) => {
       text: toDo,
     };
     setToDos((allBoards) => {
-      return {
+      const newAllBoards = {
         ...allBoards,
         [boardId]: [
           newToDo,
           ...allBoards[boardId], // 기존의 board 내용들 예를들면 { id: 1, text: "hi" }, { id: 2, text: "hello" },
         ],
       };
+      localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
+      return newAllBoards;
     });
     setValue("toDo", "");
   };
@@ -109,6 +112,8 @@ const Title = styled.h2`
 
 const Form = styled.form`
   width: 100%;
+  padding: 0 20px;
+  margin: auto;
   input {
     width: 100%;
   }

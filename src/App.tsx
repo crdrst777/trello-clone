@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
 import { useRecoilState } from "recoil";
 import styled from "styled-components";
@@ -6,13 +7,20 @@ import Board from "./components/Board";
 
 function App() {
   const [toDos, setToDos] = useRecoilState(toDoState);
+  useEffect(() => {
+    if (localStorage.getItem("allBoards")) {
+      setToDos(() => {
+        return JSON.parse(localStorage.getItem("allBoards") || "");
+      });
+    }
+  }, []);
 
   // onDragEnd함수는 드래그를 끝낸 시점에 불려진다.
   // 원래 있던 위치(source.index)에서 지우고, 이동한 위치(destination.index)에 추가한다.
   // x.splice(0, 1) -> index 0으로 가서 1개의 요소를 삭제
   const onDragEnd = (info: DropResult) => {
     console.log(info);
-    const { draggableId, destination, source } = info;
+    const { destination, source } = info;
     if (!destination) return; // 드래그했다가 다시 제자리에 놓으면 걍 리턴한다.
 
     // 동일한 보드 안에서 움직이는 경우
@@ -25,10 +33,12 @@ function App() {
         // 내가 옮기려는 toDo object. obj를 지워버려서 원하는 참조값을 없애면 안되니깐 지우기전애 먼저 잡아놓은거임.
         boardCopy.splice(source.index, 1);
         boardCopy.splice(destination?.index, 0, taskObj);
-        return {
+        const newAllBoards = {
           ...allBoards, // 기존 보드들
           [source.droppableId]: boardCopy, // 변형된 복사본
         };
+        localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
+        return newAllBoards;
         // 객체 안에서 키 값이 중복된 프로퍼티는 마지막에 선언된 프로퍼티를 사용하기 때문에 저렇게 넣어줘도 상관없는 것임.
         // key값에 변수값을 넣으려면 대괄호[]를 써야함. (ES6: Computed property name)
       });
@@ -44,11 +54,13 @@ function App() {
         const destinationBoard = [...allBoards[destination.droppableId]];
         sourceBoard.splice(source.index, 1);
         destinationBoard.splice(destination?.index, 0, taskObj);
-        return {
+        const newAllBoards = {
           ...allBoards,
           [source.droppableId]: sourceBoard,
           [destination.droppableId]: destinationBoard,
         };
+        localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
+        return newAllBoards;
       });
     }
   };
