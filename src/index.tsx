@@ -16,7 +16,7 @@ ${reset}
 }
 body {
   font-weight: 300;
-  font-family: 'Source Sans Pro', serif;
+  font-family: "Pretendard", serif;
   background-color: ${(props) => props.theme.bgColor};
   color: black;
   line-height: 1.2;
@@ -30,8 +30,10 @@ a {
 }
 button{
   cursor: pointer;
-  /* border: none;
-  padding: 0; */
+  border: none;
+  padding: 0; 
+  margin: 0;
+  background-color: transparent;
 }
 li {
   list-style: none;

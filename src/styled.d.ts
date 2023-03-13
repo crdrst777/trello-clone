@@ -8,5 +8,9 @@ declare module "styled-components" {
     bgColor: string;
     boardColor: string;
     cardColor: string;
+    buttonColor: string;
+    hoverButtonColor: string;
+    accentColor: string;
+    gray3: string;
   }
 }

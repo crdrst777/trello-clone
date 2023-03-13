@@ -3,15 +3,17 @@ import { useRef } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import DraggableCard from "./DraggableCard";
-import { IToDo, toDoState } from "../atom";
-import { useSetRecoilState } from "recoil";
+import { ICard, boardState } from "../atom";
+import { useRecoilState } from "recoil";
 
 interface IBoardProps {
-  toDos: IToDo[];
-  boardId: string; // Doing이나 Done같은거임
+  boardTitle: string;
+  boardId: number; // 말그대로 보드의 id
+  boardToDos: ICard[];
+  // isDragging: boolean;
 }
 
-interface IAreaProps {
+interface ICardsWrapperProps {
   isDraggingOver: boolean;
   isDraggingFromThis: boolean;
 }
@@ -20,28 +22,47 @@ interface IForm {
   toDo: string;
 }
 
-const Board = ({ toDos, boardId }: IBoardProps) => {
-  const setToDos = useSetRecoilState(toDoState);
+const Board = ({
+  boardTitle,
+  boardId,
+  boardToDos,
+}: // isDragging,
+IBoardProps) => {
+  const [boards, setBoards] = useRecoilState(boardState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   // addToDo
-  const onValid = ({ toDo }: IForm) => {
-    console.log(toDo);
+  const onCreateCard = ({ toDo }: IForm) => {
+    console.log("toDo", toDo);
+    console.log("boardTitle", boardTitle);
+    console.log("boardId", boardId);
+    console.log("boardToDos", boardToDos);
     const newToDo = {
       id: Date.now(),
       text: toDo,
     };
-    setToDos((allBoards) => {
-      const newAllBoards = {
-        ...allBoards,
-        [boardId]: [
-          newToDo,
-          ...allBoards[boardId], // 기존의 board 내용들 예를들면 { id: 1, text: "hi" }, { id: 2, text: "hello" },
-        ],
-      };
-      localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
-      return newAllBoards;
+    setBoards((allBoards) => {
+      const boardsCopy = [...allBoards];
+      const boardIndex = allBoards.findIndex((b) => b.id === boardId);
+      const boardCopy = { ...allBoards[boardIndex] };
+
+      boardCopy.toDos = [newToDo, ...boardCopy.toDos];
+      boardsCopy.splice(boardIndex, 1, boardCopy);
+
+      localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
+      return boardsCopy;
     });
     setValue("toDo", "");
+  };
+
+  const onDeleteBoard = () => {
+    if (window.confirm(`${boardTitle} 보드를 삭제하시겠습니까?`)) {
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const boardIndex = allBoards.findIndex((b) => b.id === boardId);
+        boardsCopy.splice(boardIndex, 1);
+        return boardsCopy;
+      });
+    }
   };
 
   // const inputRef = useRef<HTMLInputElement>(null); // 타입 지정해줘야함. <HTMLInputElement>
@@ -54,80 +75,97 @@ const Board = ({ toDos, boardId }: IBoardProps) => {
 
   return (
     <>
-      <Wrapper>
-        <Title>{boardId}</Title>
-        <Form onSubmit={handleSubmit(onValid)}>
-          <input
-            {...register("toDo", { required: true })}
-            type="text"
-            placeholder={`Àdd task on ${boardId}`}
-          />
-        </Form>
-        {/* <input ref={inputRef} placeholder="grab me" />
+      {/* <input ref={inputRef} placeholder="grab me" />
         <button onClick={onClick}>click me</button> */}
-        <Droppable droppableId={boardId}>
-          {(magic, snapshot) => (
-            <Area
-              isDraggingOver={snapshot.isDraggingOver} // 보드 위로 올라왔는지 여부 boolean
-              isDraggingFromThis={Boolean(snapshot.draggingFromThisWith)} // string이든 뭐든 존재하기만하면 true로
-              ref={magic.innerRef}
-              {...magic.droppableProps}
-            >
-              {toDos.map((toDo, index) => (
+      <Droppable droppableId={boardTitle}>
+        {(provided, snapshot) => (
+          <Container
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            isDraggingOver={snapshot.isDraggingOver} // 보드 위로 올라왔는지 여부 boolean
+            // isDraggingFromThis={Boolean(snapshot.draggingFromThisWith)} // string이든 뭐든 존재하기만하면 true로
+          >
+            <TitleFormWrapper>
+              <Title>
+                <h2>{boardTitle}</h2>
+                <button onClick={onDeleteBoard}>X</button>
+              </Title>
+              <Form onSubmit={handleSubmit(onCreateCard)}>
+                <input
+                  {...register("toDo", { required: true })}
+                  type="text"
+                  placeholder={`Add task on ${boardTitle}`}
+                />
+              </Form>
+            </TitleFormWrapper>
+            <CardsWrapper ref={provided.innerRef} {...provided.droppableProps}>
+              {boardToDos.map((toDo, index) => (
                 <DraggableCard
                   key={toDo.id}
-                  index={index}
                   toDoId={toDo.id}
                   toDoText={toDo.text}
+                  index={index}
                 />
               ))}
-              {magic.placeholder}
+              {provided.placeholder}
               {/* Draggable 엘리먼트를 드래그하는 동안 position: fixed(영역을 고정시킴)를 적용함. (Droppable 리스트가 작아지는 것을 방지) */}
-            </Area>
-          )}
-        </Droppable>
-      </Wrapper>
+            </CardsWrapper>
+          </Container>
+        )}
+      </Droppable>
     </>
   );
 };
 
 export default Board;
 
-const Wrapper = styled.div`
+const Container = styled.div<{ isDraggingOver: boolean }>`
   width: 300px;
-  padding-top: 10px;
-  background-color: ${(props) => props.theme.boardColor};
-  border-radius: 5px;
-  min-height: 300px;
+  border-radius: 15px;
+  min-height: 285px;
+  margin: 0 15px 0 0;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 0.3rem 0.6rem rgba(0, 0, 0, 0.15);
+  color: ${(props) => (props.isDraggingOver ? "white" : "none")};
+  background-color: ${(props) =>
+    props.isDraggingOver ? props.theme.accentColor : props.theme.boardColor};
 `;
 
-const Title = styled.h2`
-  text-align: center;
-  font-weight: 600;
-  margin-bottom: 10px;
-  font-size: 18px;
+const TitleFormWrapper = styled.div``;
+
+const Title = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+
+  h2 {
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+  button {
+    border: none;
+    background-color: transparent;
+  }
 `;
 
 const Form = styled.form`
   width: 100%;
   padding: 0 20px;
-  margin: auto;
+  /* margin: auto; */
   input {
     width: 100%;
   }
 `;
 
-const Area = styled.div<IAreaProps>`
-  background-color: ${(props) =>
-    props.isDraggingOver
+const CardsWrapper = styled.div`
+  /* props.isDraggingOver
       ? "#dfe6e9"
       : props.isDraggingFromThis
       ? "#b2bec3" // 드래그해서 떠날 때면 회색으로
-      : "transparent"}; // 투명
-
+      : "transparent"}; // 투명 */
   flex-grow: 1;
-  transition: background-color 0.3s ease-in-out;
-  padding: 20px;
+  transition: background-color 0.2s ease-in-out;
+  padding: 16px 20px 20px 20px;
 `;
