@@ -14,7 +14,6 @@ import { ReactComponent as Add } from "./assets/icon/add.svg";
 
 function App() {
   const [boards, setBoards] = useRecoilState(boardState);
-  console.log("boards", boards);
 
   useEffect(() => {
     if (localStorage.getItem("allBoards")) {
@@ -25,7 +24,7 @@ function App() {
   }, []);
 
   const onCreateBoard = () => {
-    const name = window.prompt("새 보드의 이름을 입력해주세요.")?.trim();
+    const name = window.prompt("새 보드의 이름을 입력해주세요.")?.trim(); // 앞과 뒤쪽의 공백을 제거하여 줌
     if (name !== null && name !== undefined) {
       if (name === "") {
         alert("이름을 입력해주세요.");
@@ -51,28 +50,44 @@ function App() {
     const { destination, source } = info;
     if (!destination) return; // 드래그했다가 다시 제자리에 놓으면 걍 리턴한다.
 
-    // 동일한 보드 안에서 움직이는 경우
-    //   if (destination?.droppableId === source.droppableId) {
-    //     // 1.수정이 일어난 보드[]만 복사한다. (allBoards객체 안의 source.droppableId를 가져온다.) (droppableId는 Doing이나 Done같은거임)
-    //     // 2.그 복사본을 기존 보드들 옆에 붙여준다.
-    //     setBoards((allBoards) => {
-    //       const boardCopy = [...allBoards[source.droppableId]];
-    //       const taskObj = boardCopy[source.index];
-    //       // 내가 옮기려는 toDo object. obj를 지워버려서 원하는 참조값을 없애면 안되니깐 지우기전애 먼저 잡아놓은거임.
-    //       boardCopy.splice(source.index, 1);
-    //       boardCopy.splice(destination?.index, 0, taskObj);
-    //       const newAllBoards = {
-    //         ...allBoards, // 기존 보드들
-    //         [source.droppableId]: boardCopy, // 변형된 복사본
-    //       };
-    //       localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
-    //       return newAllBoards;
-    //       // 객체 안에서 키 값이 중복된 프로퍼티는 마지막에 선언된 프로퍼티를 사용하기 때문에 저렇게 넣어줘도 상관없는 것임.
-    //       // key값에 변수값을 넣으려면 대괄호[]를 써야함. (ES6: Computed property name)
-    //     });
-    //   }
+    // 태스크 순서 변경(보드 내)
+    if (destination.droppableId === source.droppableId) {
+      // 1.수정이 일어난 보드[]만 복사한다. (allBoards객체 안의 source.droppableId를 가져온다.) (droppableId는 Doing이나 Done같은거임)
+      // 2.그 복사본을 기존 보드들 옆에 붙여준다.
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const boardIndex = boardsCopy.findIndex(
+          ({ title }) => title === source.droppableId
+        );
+        const boardCopy = { ...boardsCopy[boardIndex] };
+        const listCopy = [...boardCopy.toDos];
+        const prevToDo = boardCopy.toDos[source.index];
 
-    //   // 다른 보드를 넘나들며 움직이는 경우
+        listCopy.splice(source.index, 1);
+        listCopy.splice(destination.index, 0, prevToDo);
+
+        boardCopy.toDos = listCopy;
+        boardsCopy.splice(boardIndex, 1, boardCopy);
+        localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
+        return boardsCopy;
+
+        // const boardCopy = [...allBoards[source.droppableId]];
+        // const taskObj = boardCopy[source.index];
+        // // 내가 옮기려는 toDo object. obj를 지워버려서 원하는 참조값을 없애면 안되니깐 지우기전애 먼저 잡아놓은거임.
+        // boardCopy.splice(source.index, 1);
+        // boardCopy.splice(destination?.index, 0, taskObj);
+        // const newAllBoards = {
+        //   ...allBoards, // 기존 보드들
+        //   [source.droppableId]: boardCopy, // 변형된 복사본
+        // };
+        // localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
+        // return newAllBoards;
+        // 객체 안에서 키 값이 중복된 프로퍼티는 마지막에 선언된 프로퍼티를 사용하기 때문에 저렇게 넣어줘도 상관없는 것임.
+        // key값에 변수값을 넣으려면 대괄호[]를 써야함. (ES6: Computed property name)
+      });
+    }
+
+    // 태스크 순서 변경(보드 간)
     //   if (destination?.droppableId !== source.droppableId) {
     //     // 1. 움직임이 시작된 보드, 움직임이 끝난 보드를 각각 복사
     //     // 2. sourceBoard에서 draggableId을 삭제, targetBoard에는 draggableId을 추가
@@ -92,6 +107,7 @@ function App() {
     //     });
     //   }
   };
+  console.log("boards", boards);
 
   return (
     <>
