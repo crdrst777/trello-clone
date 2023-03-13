@@ -88,24 +88,52 @@ function App() {
     }
 
     // 태스크 순서 변경(보드 간)
-    //   if (destination?.droppableId !== source.droppableId) {
-    //     // 1. 움직임이 시작된 보드, 움직임이 끝난 보드를 각각 복사
-    //     // 2. sourceBoard에서 draggableId을 삭제, targetBoard에는 draggableId을 추가
-    //     setBoards((allBoards) => {
-    //       const sourceBoard = [...allBoards[source.droppableId]];
-    //       const taskObj = sourceBoard[source.index];
-    //       const destinationBoard = [...allBoards[destination.droppableId]];
-    //       sourceBoard.splice(source.index, 1);
-    //       destinationBoard.splice(destination?.index, 0, taskObj);
-    //       const newAllBoards = {
-    //         ...allBoards,
-    //         [source.droppableId]: sourceBoard,
-    //         [destination.droppableId]: destinationBoard,
-    //       };
-    //       localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
-    //       return newAllBoards;
-    //     });
-    //   }
+    if (destination?.droppableId !== source.droppableId) {
+      // 1. 움직임이 시작된 보드, 움직임이 끝난 보드를 각각 복사
+      // 2. sourceBoard에서 draggableId을 삭제, targetBoard에는 draggableId을 추가
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const sourceBoardIndex = boardsCopy.findIndex(
+          ({ title }) => title === source.droppableId
+        );
+        const destinationBoardIndex = boardsCopy.findIndex(
+          ({ title }) => title === destination.droppableId
+        );
+
+        const sourceBoardCopy = { ...boardsCopy[sourceBoardIndex] };
+        const destinationBoardCopy = { ...boardsCopy[destinationBoardIndex] };
+
+        const sourceListCopy = [...sourceBoardCopy.toDos];
+        const destinationListCopy = [...destinationBoardCopy.toDos];
+
+        const prevToDo = sourceBoardCopy.toDos[source.index];
+
+        sourceListCopy.splice(source.index, 1);
+        destinationListCopy.splice(destination.index, 0, prevToDo);
+
+        sourceBoardCopy.toDos = sourceListCopy;
+        destinationBoardCopy.toDos = destinationListCopy;
+
+        boardsCopy.splice(sourceBoardIndex, 1, sourceBoardCopy);
+        boardsCopy.splice(destinationBoardIndex, 1, destinationBoardCopy);
+
+        localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
+        return boardsCopy;
+
+        //       const sourceBoard = [...allBoards[source.droppableId]];
+        //       const taskObj = sourceBoard[source.index];
+        //       const destinationBoard = [...allBoards[destination.droppableId]];
+        //       sourceBoard.splice(source.index, 1);
+        //       destinationBoard.splice(destination?.index, 0, taskObj);
+        //       const newAllBoards = {
+        //         ...allBoards,
+        //         [source.droppableId]: sourceBoard,
+        //         [destination.droppableId]: destinationBoard,
+        //       };
+        //       localStorage.setItem("allBoards", JSON.stringify(newAllBoards));
+        //       return newAllBoards;
+      });
+    }
   };
   console.log("boards", boards);
 
