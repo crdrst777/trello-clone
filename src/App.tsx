@@ -24,6 +24,25 @@ function App() {
     }
   }, []);
 
+  const onCreateBoard = () => {
+    const name = window.prompt("새 보드의 이름을 입력해주세요.")?.trim();
+    if (name !== null && name !== undefined) {
+      if (name === "") {
+        alert("이름을 입력해주세요.");
+        return;
+      }
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const newBoards = [
+          ...boardsCopy,
+          { title: name, id: Date.now(), toDos: [] },
+        ];
+        localStorage.setItem("allBoards", JSON.stringify(newBoards));
+        return newBoards;
+      });
+    }
+  };
+
   // onDragEnd함수는 드래그를 끝낸 시점에 불려진다.
   // 원래 있던 위치(source.index)에서 지우고, 이동한 위치(destination.index)에 추가한다.
   // x.splice(0, 1) -> index 0으로 가서 1개의 요소를 삭제
@@ -78,7 +97,7 @@ function App() {
     <>
       <Header>
         <Title>TO DO LIST</Title>
-        <Btn>
+        <Btn onClick={onCreateBoard}>
           <Add />
         </Btn>
       </Header>
