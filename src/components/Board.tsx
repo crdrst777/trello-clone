@@ -1,36 +1,32 @@
 import { useForm } from "react-hook-form";
-import { useRef } from "react";
+// import { useRef } from "react";
 import { Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import DraggableCard from "./DraggableCard";
 import { ICard, boardState } from "../atom";
 import { useRecoilState } from "recoil";
+import { ReactComponent as DeleteIcon } from "../assets/icon/delete.svg";
 
 interface IBoardProps {
   boardTitle: string;
-  boardId: number; // 말그대로 보드의 id
+  boardId: number;
   boardToDos: ICard[];
-  // isDragging: boolean;
 }
 
-interface ICardsWrapperProps {
-  isDraggingOver: boolean;
-  isDraggingFromThis: boolean;
-}
+// interface ICardsWrapperProps {
+//   isDraggingOver: boolean;
+//   isDraggingFromThis: boolean;
+// }
 
 interface IForm {
   toDo: string;
 }
 
-const Board = ({
-  boardTitle,
-  boardId,
-  boardToDos,
-}: // isDragging,
-IBoardProps) => {
+const Board = ({ boardTitle, boardId, boardToDos }: IBoardProps) => {
   const [boards, setBoards] = useRecoilState(boardState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
-  // addToDo
+
+  // 카드 생성
   const onCreateCard = ({ toDo }: IForm) => {
     console.log("toDo", toDo);
     console.log("boardTitle", boardTitle);
@@ -54,12 +50,14 @@ IBoardProps) => {
     setValue("toDo", "");
   };
 
+  // 보드 삭제
   const onDeleteBoard = () => {
     if (window.confirm(`${boardTitle} 보드를 삭제하시겠습니까?`)) {
       setBoards((allBoards) => {
         const boardsCopy = [...allBoards];
         const boardIndex = allBoards.findIndex((b) => b.id === boardId);
         boardsCopy.splice(boardIndex, 1);
+        localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
         return boardsCopy;
       });
     }
@@ -85,11 +83,13 @@ IBoardProps) => {
             isDraggingOver={snapshot.isDraggingOver} // 보드 위로 올라왔는지 여부 boolean
             // isDraggingFromThis={Boolean(snapshot.draggingFromThisWith)} // string이든 뭐든 존재하기만하면 true로
           >
-            <TitleFormWrapper>
-              <Title>
-                <h2>{boardTitle}</h2>
-                <button onClick={onDeleteBoard}>X</button>
-              </Title>
+            <CardTopArea>
+              <TitleBtnWrapper>
+                <Title>{boardTitle}</Title>
+                <Btn onClick={onDeleteBoard}>
+                  <DeleteIcon />
+                </Btn>
+              </TitleBtnWrapper>
               <Form onSubmit={handleSubmit(onCreateCard)}>
                 <input
                   {...register("toDo", { required: true })}
@@ -97,7 +97,7 @@ IBoardProps) => {
                   placeholder={`Add task on ${boardTitle}`}
                 />
               </Form>
-            </TitleFormWrapper>
+            </CardTopArea>
             <CardsWrapper ref={provided.innerRef} {...provided.droppableProps}>
               {boardToDos.map((toDo, index) => (
                 <DraggableCard
@@ -132,28 +132,41 @@ const Container = styled.div<{ isDraggingOver: boolean }>`
     props.isDraggingOver ? props.theme.accentColor : props.theme.boardColor};
 `;
 
-const TitleFormWrapper = styled.div``;
+const CardTopArea = styled.div``;
 
-const Title = styled.div`
+const TitleBtnWrapper = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 20px;
+  align-items: center;
+  padding: 16px 20px;
+`;
 
-  h2 {
-    font-weight: 600;
-    font-size: 18px;
+const Title = styled.h2`
+  font-weight: 600;
+  font-size: 18px;
+`;
+
+const Btn = styled.button`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 4px;
+  &:hover {
+    cursor: pointer;
+    background-color: ${(props) => props.theme.hoverButtonOverlayColor};
   }
-
-  button {
-    border: none;
-    background-color: transparent;
+  svg {
+    width: 23px;
+    height: 23px;
+    fill: ${(props) => props.theme.buttonColor};
   }
 `;
 
 const Form = styled.form`
   width: 100%;
   padding: 0 20px;
-  /* margin: auto; */
   input {
     width: 100%;
   }

@@ -10,7 +10,7 @@ import styled from "styled-components";
 import { boardState } from "./atom";
 import Board from "./components/Board";
 // import AddBoxIcon from "@mui/icons-material/AddBox";
-import { ReactComponent as Add } from "./assets/icon/add.svg";
+import { ReactComponent as AddIcon } from "./assets/icon/add.svg";
 
 function App() {
   const [boards, setBoards] = useRecoilState(boardState);
@@ -23,6 +23,7 @@ function App() {
     }
   }, []);
 
+  // 보드 생성
   const onCreateBoard = () => {
     const name = window.prompt("새 보드의 이름을 입력해주세요.")?.trim(); // 앞과 뒤쪽의 공백을 제거하여 줌
     if (name !== null && name !== undefined) {
@@ -49,6 +50,21 @@ function App() {
     console.log(info);
     const { destination, source } = info;
     if (!destination) return; // 드래그했다가 다시 제자리에 놓으면 걍 리턴한다.
+
+    if (source.index === destination.index) return;
+
+    // 보드 순서 변경
+    if (source.index !== destination.index) {
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const boardCopy = boardsCopy[source.index];
+
+        boardsCopy.splice(source.index, 1);
+        boardsCopy.splice(destination.index, 0, boardCopy);
+        localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
+        return boardsCopy;
+      });
+    }
 
     // 태스크 순서 변경(보드 내)
     if (destination.droppableId === source.droppableId) {
@@ -142,7 +158,7 @@ function App() {
       <Header>
         <Title>TO DO LIST</Title>
         <Btn onClick={onCreateBoard}>
-          <Add />
+          <AddIcon />
         </Btn>
       </Header>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -201,7 +217,7 @@ const Btn = styled.button`
   svg {
     width: 40px;
     height: 40px;
-    fill: ${(props) => props.theme.gray3};
+    fill: ${(props) => props.theme.buttonColor};
     &:hover,
     &:focus {
       fill: ${(props) => props.theme.accentColor};

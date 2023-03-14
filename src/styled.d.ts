@@ -10,6 +10,7 @@ declare module "styled-components" {
     cardColor: string;
     buttonColor: string;
     hoverButtonColor: string;
+    hoverButtonOverlayColor: string;
     accentColor: string;
     gray3: string;
   }
