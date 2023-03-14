@@ -168,10 +168,10 @@ const Btn = styled.button`
 `;
 
 const Form = styled.form`
-  width: 100%;
   padding: 0 20px;
   input {
     width: 100%;
+    height: 28px;
   }
 `;
 

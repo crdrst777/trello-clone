@@ -155,12 +155,12 @@ function App() {
 
   return (
     <>
-      <Header>
+      <Nav>
         <Title>TO DO LIST</Title>
         <Btn onClick={onCreateBoard}>
           <AddIcon />
         </Btn>
-      </Header>
+      </Nav>
       <DragDropContext onDragEnd={onDragEnd}>
         <Droppable droppableId="boardsArea" direction="horizontal" type="board">
           {(provided, snapshot) => (
@@ -200,17 +200,19 @@ function App() {
 
 export default App;
 
-const Header = styled.header`
+const Nav = styled.nav`
   display: flex;
+  position: fixed;
   justify-content: space-between;
   align-items: center;
-  height: 120px;
-  padding: 40px 48px;
+  width: 100vw;
+  /* height: 120px; */
+  padding: 45px 48px;
 `;
 
 const Title = styled.h1`
   font-size: 30px;
-  font-weight: 600;
+  font-weight: 700;
 `;
 
 const Btn = styled.button`
@@ -218,8 +220,7 @@ const Btn = styled.button`
     width: 40px;
     height: 40px;
     fill: ${(props) => props.theme.buttonColor};
-    &:hover,
-    &:focus {
+    &:hover {
       fill: ${(props) => props.theme.accentColor};
     }
   }
@@ -247,7 +248,8 @@ const BoardsWrapper = styled.div`
   justify-content: flex-start;
   min-width: calc(100vw - 64px);
   /* height: calc(100vh - 160px); */
-  margin: 0 48px 48px 48px;
+  margin: 0px 48px 48px 48px;
+  padding-top: 130px;
 `;
 
 const BoardWrapper = styled.div``;
