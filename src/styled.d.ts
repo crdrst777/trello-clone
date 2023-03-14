@@ -13,5 +13,6 @@ declare module "styled-components" {
     hoverButtonOverlayColor: string;
     accentColor: string;
     gray3: string;
+    gray4: string;
   }
 }

@@ -9,4 +9,5 @@ export const darkTheme: DefaultTheme = {
   hoverButtonOverlayColor: "rgba(0, 0, 0, 0.1)",
   accentColor: "#8F43EE",
   gray3: "#828282",
+  gray4: "#BDBDBD",
 };

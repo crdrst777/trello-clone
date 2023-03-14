@@ -1,17 +1,44 @@
 import React from "react";
 import { Draggable } from "react-beautiful-dnd";
+import { useRecoilState } from "recoil";
 import styled from "styled-components";
 import { ReactComponent as DeleteIcon } from "../assets/icon/delete.svg";
+import { boardState } from "../atom";
 
 interface IDraggableCardProps {
   toDoId: number;
   toDoText: string;
   index: number;
+  boardId: number;
 }
 
-const DraggableCard = ({ toDoId, toDoText, index }: IDraggableCardProps) => {
+const DraggableCard = ({
+  toDoId,
+  toDoText,
+  index,
+  boardId,
+}: IDraggableCardProps) => {
+  const [boards, setBoards] = useRecoilState(boardState);
+
   // 카드 삭제
-  const onDeleteCard = () => {};
+  const onDeleteCard = () => {
+    if (window.confirm(`${toDoText} 할 일을 삭제하시겠습니까?`)) {
+      setBoards((allBoards) => {
+        const boardsCopy = [...allBoards];
+        const boardIndex = boardsCopy.findIndex((b) => b.id === boardId);
+        const boardCopy = { ...boardsCopy[boardIndex] };
+        const listCopy = [...boardCopy.toDos];
+        const cardIndex = boardCopy.toDos.findIndex((c) => c.id === toDoId);
+
+        listCopy.splice(cardIndex, 1);
+        boardCopy.toDos = listCopy;
+        boardsCopy.splice(boardIndex, 1, boardCopy);
+
+        localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
+        return boardsCopy;
+      });
+    }
+  };
 
   // console.log("toDoText", toDoText);
 
@@ -70,13 +97,15 @@ const Btn = styled.button`
   width: 33px;
   height: 33px;
   border-radius: 4px;
+  transition: background-color 0.25s, box-shadow 0.25s;
+
   &:hover {
     cursor: pointer;
-    background-color: ${(props) => props.theme.hoverButtonOverlayColor};
+    background-color: rgba(0, 0, 0, 0.06);
   }
   svg {
     width: 19px;
     height: 19px;
-    fill: ${(props) => props.theme.buttonColor};
+    fill: #bdbdbd;
   }
 `;

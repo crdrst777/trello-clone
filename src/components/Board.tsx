@@ -38,8 +38,8 @@ const Board = ({ boardTitle, boardId, boardToDos }: IBoardProps) => {
     };
     setBoards((allBoards) => {
       const boardsCopy = [...allBoards];
-      const boardIndex = allBoards.findIndex((b) => b.id === boardId);
-      const boardCopy = { ...allBoards[boardIndex] };
+      const boardIndex = boardsCopy.findIndex((b) => b.id === boardId);
+      const boardCopy = { ...boardsCopy[boardIndex] };
 
       boardCopy.toDos = [newToDo, ...boardCopy.toDos];
       boardsCopy.splice(boardIndex, 1, boardCopy);
@@ -55,7 +55,7 @@ const Board = ({ boardTitle, boardId, boardToDos }: IBoardProps) => {
     if (window.confirm(`${boardTitle} 보드를 삭제하시겠습니까?`)) {
       setBoards((allBoards) => {
         const boardsCopy = [...allBoards];
-        const boardIndex = allBoards.findIndex((b) => b.id === boardId);
+        const boardIndex = boardsCopy.findIndex((b) => b.id === boardId);
         boardsCopy.splice(boardIndex, 1);
         localStorage.setItem("allBoards", JSON.stringify(boardsCopy));
         return boardsCopy;
@@ -105,6 +105,7 @@ const Board = ({ boardTitle, boardId, boardToDos }: IBoardProps) => {
                   toDoId={toDo.id}
                   toDoText={toDo.text}
                   index={index}
+                  boardId={boardId}
                 />
               ))}
               {provided.placeholder}
@@ -153,6 +154,8 @@ const Btn = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 4px;
+  transition: background-color 0.25s, box-shadow 0.25s;
+
   &:hover {
     cursor: pointer;
     background-color: ${(props) => props.theme.hoverButtonOverlayColor};
@@ -179,6 +182,6 @@ const CardsWrapper = styled.div`
       ? "#b2bec3" // 드래그해서 떠날 때면 회색으로
       : "transparent"}; // 투명 */
   flex-grow: 1;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.3s ease-in-out;
   padding: 16px 20px 20px 20px;
 `;
